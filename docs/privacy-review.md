@@ -6,10 +6,10 @@ Reviewed source, generated runtime, tests, manifest template, dependency metadat
 
 - Native-workspace instructions containing personal names and absolute paths.
 - Raw experiment payloads and observation logs containing actual Figma variable IDs/keys, node IDs and private file URLs.
-- Personal manifest with the account-assigned plugin ID.
+- Private design data; the distributed manifest contains only the existing plugin identifier and runtime configuration.
 - Local dependency installations, environment files, archives and incidental OS files.
 
-Only the generic manifest template is committed. A fresh Git history is used; excluded files were not committed before removal. Commit identity uses a GitHub noreply address.
+The runtime manifest and a generic manifest template are committed. The existing Figma plugin ID is intentionally included to support installation on other computers; it is not an authentication credential. A fresh Git history is used; excluded files were not committed before removal. Commit identity uses a GitHub noreply address.
 
 ## Retained by design
 

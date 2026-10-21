@@ -5,7 +5,6 @@ node_modules/
 .env.*
 *.pem
 *.key
-manifest.json
 AGENTS.md
 evidence/
 payloads/

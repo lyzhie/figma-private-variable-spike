@@ -2,15 +2,21 @@
 
 A Figma Design development plugin that reviews variable bindings in imported instances and reuses available variables on compatible frames, shapes and text layers.
 
-## Setup
+## Download and run (no development tools needed)
 
-1. In Figma Desktop, create a development plugin through **Plugins → Development → New plugin** and obtain its assigned ID.
-2. Run `npm ci` and `npm run configure -- YOUR_FIGMA_PLUGIN_ID` in this project.
-3. Run `npm run verify`.
-4. Choose **Plugins → Development → Import plugin from manifest**, selecting the generated `manifest.json`.
-5. Run **Private Variable Spike**.
+1. Download **private-token-picker-v0.1.0.zip** from [the latest release](https://github.com/lyzhie/figma-private-variable-spike/releases/latest). Choose this asset rather than GitHub's automatic source archive.
+2. Extract the whole folder to a permanent local location.
+3. Open a Design file in the **Figma desktop app**.
+4. Choose **Plugins → Development → Import plugin from manifest** and select the extracted `manifest.json`.
+5. Run **Private Variable Spike** from Development.
 
-The personal plugin ID is intentionally omitted. A real Figma-assigned ID is required for persistent file storage. Prebuilt runtime files are included in `dist/`; to use without Node.js, copy `manifest.template.json` to `manifest.json`, add your assigned `id` field, and keep it beside `dist/`.
+Keep `manifest.json` and `dist/` together. The package includes this plugin's existing Figma-assigned ID, so you do not need to create a new ID to test it on another computer. This ID is a plugin identifier, not a password or access token. This is a development build, not a published Community plugin.
+
+Saved tokens live in the Figma document, not in the ZIP. Open the same synced file, or review an instance again in another file. Your account must have access to the relevant file and components.
+
+## Build from source
+
+Run `npm ci` followed by `npm run verify`. Import the included `manifest.json` as above. If creating a separate plugin of your own, obtain an ID through Figma's **New plugin** flow and run `npm run configure -- YOUR_FIGMA_PLUGIN_ID`. Do not commit your replacement ID back to this repository.
 
 ## Workflow
 
@@ -28,7 +34,7 @@ Only reviewed property categories supported by the target are listed. Corner rad
 
 No network access is requested. There are no analytics, external API credentials or external uploads in the plugin. Review reads the selected instance and descendants. It stores variable IDs, keys, names, resolved value snapshots and source usage labels in the current Figma document's private plugin data. These can contain design metadata; they follow the Figma file, not the GitHub repository. Clearing removes the current saved list, not historical Figma versions.
 
-This repository excludes personal paths, account-specific plugin configuration, real design exports, private file links and raw observation logs. Tests use synthetic variables. See [privacy review](docs/privacy-review.md).
+This repository excludes personal paths, real design exports, private file links and raw observation logs. Tests use synthetic variables. See [privacy review](docs/privacy-review.md).
 
 ## Evidence boundary
 
