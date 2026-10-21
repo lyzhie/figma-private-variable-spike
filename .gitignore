@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.*
+*.pem
+*.key
+manifest.json
+AGENTS.md
+evidence/
+payloads/
+docs/observation-log.md
+releases/
+*.zip

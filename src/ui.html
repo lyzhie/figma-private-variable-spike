@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+:root{font:12px/1.5 Inter,system-ui;color:var(--figma-color-text,#222);background:var(--figma-color-bg,#fff)}body{padding:16px;margin:0}h2{font-size:14px;margin:0 0 8px}section{padding:12px 0;border-bottom:1px solid var(--figma-color-border,#ddd)}button,select{font:inherit;padding:7px;border:1px solid #aaa;border-radius:6px;color:inherit;background:var(--figma-color-bg,#fff)}button{cursor:pointer}button:disabled{opacity:.4}small{color:var(--figma-color-text-secondary,#777)}#tokens{max-height:160px;overflow:auto}.token{display:flex;justify-content:space-between;gap:12px;padding:5px 0}.value{font-variant-numeric:tabular-nums}.token-group h3{font-size:10px;letter-spacing:.08em;color:var(--figma-color-text-secondary,#777);margin:12px 0 4px}.token{align-items:center}.swatch{display:inline-block;position:relative;width:22px;height:22px;border:1px solid var(--figma-color-border,#ccc);border-radius:4px;overflow:hidden;background:repeating-conic-gradient(#ddd 0% 25%,#fff 0% 50%) 0/8px 8px}.swatch-color{position:absolute;inset:0}#status{white-space:pre-wrap;margin-top:12px}.head,.property{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:center;padding:6px 0}.head{color:var(--figma-color-text-secondary,#777)}.control{display:flex;gap:6px;min-width:0}.control select{min-width:0;flex:1}#applyAll{width:100%;margin:12px 0;background:#0d99ff;color:white;border:0}.actions{display:flex;gap:8px;margin:10px 0}</style></head><body>
+<section><h2>1. Review instance</h2><small>Select an imported instance to collect its tokens.</small><div class="actions"><button id="review">Review & save tokens</button><button id="clear">Clear saved tokens</button></div><div id="tokens">No saved tokens.</div><small>Saved in this file. Values reflect the mode resolved when read.</small></section>
+<section><h2>2. Select target</h2><div id="target">Select a frame, shape or text layer.</div></section>
+<section><h2>3. Apply tokens</h2><div class="head"><span>Property</span><span>Saved token</span></div><div id="properties"></div><button id="applyAll" disabled>Apply selected tokens</button><small>Fill and Stroke require an existing solid paint.</small></section><div id="status" role="status"></div>
+<script>
+const $=id=>document.getElementById(id);let tokens=[],target={places:[]};
+const send=m=>parent.postMessage({pluginMessage:m},'*');
+function choices(){
+  $('properties').replaceChildren(); $('applyAll').disabled=true;
+  if(!target.places.length){$('properties').textContent='No supported properties for this selection.';return;}
+  for(const p of target.places){
+    const row=document.createElement('div');row.className='property';
+    const label=document.createElement('label');label.textContent=p.label;label.htmlFor=`property-${p.id}`;
+    const controls=document.createElement('div');controls.className='control';
+    const select=document.createElement('select');select.id=label.htmlFor;select.setAttribute('aria-label',`${p.label} token`);
+    const compatible=tokens.filter(t=>t.type===p.type);
+    const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent=compatible.length?'Choose token…':'No compatible tokens';select.append(placeholder);
+    for(const t of compatible){const o=document.createElement('option');o.value=t.key;o.textContent=`${t.name} · ${t.value ?? 'Review to read value'}`;select.append(o);}
+    select.dataset.place=p.id;
+    select.onchange=()=>{ $('applyAll').disabled=![...$('properties').querySelectorAll('select')].some(s=>s.value); };
+    controls.append(select);row.append(label,controls);$('properties').append(row);
+  }
+}
+$('applyAll').onclick=()=>{const bindings=[...$('properties').querySelectorAll('select')].filter(s=>s.value).map(s=>({place:s.dataset.place,key:s.value}));$('applyAll').disabled=true;send({type:'apply',targetId:target.id,bindings});};
+$('review').onclick=()=>send({type:'review'});
+$('clear').onclick=()=>send({type:'clear'});
+onmessage=e=>{const m=e.data.pluginMessage;if(!m)return;
+  if(m.type==='tokens'){tokens=m.tokens;$('tokens').replaceChildren();if(!tokens.length)$('tokens').textContent='No saved tokens.';
+    for(const type of [...new Set(tokens.map(t=>t.type))]){
+      const group=document.createElement('div');group.className='token-group';
+      const heading=document.createElement('h3');heading.textContent=type;group.append(heading);
+      for(const t of tokens.filter(t=>t.type===type)){
+        const d=document.createElement('div');d.className='token';
+        const name=document.createElement('span');name.textContent=t.name;
+        const value=document.createElement('span');value.className='value';
+        const color=type==='COLOR' && /^#([0-9A-F]{6})(?: · (\d+)%)*$/i.exec(t.value || '');
+        if(color){
+          value.style.display='inline-flex';value.style.alignItems='center';value.style.gap='8px';
+          const swatch=document.createElement('span');swatch.className='swatch';swatch.setAttribute('aria-hidden','true');
+          const fill=document.createElement('span');fill.className='swatch-color';fill.style.backgroundColor='#'+color[1];fill.style.opacity=color[2] ? String(Number(color[2])/100) : '1';swatch.append(fill);const hex=document.createElement('span');hex.textContent=t.value;value.append(swatch,hex);
+        }else value.textContent=t.value??'Review to read value';
+        d.append(name,value);group.append(d);
+      }
+      $('tokens').append(group);
+    }
+    choices();}
+  if(m.type==='target'){target=m;$('target').textContent=m.id?`${m.name} · ${m.kind}`:'Select a frame, shape or text layer.';choices();}
+  if(m.message){$('applyAll').disabled=![...$('properties').querySelectorAll('select')].some(s=>s.value);$('status').textContent=m.message;$('status').style.color=m.error?'#d4351c':'';}
+};
+</script></body></html>
